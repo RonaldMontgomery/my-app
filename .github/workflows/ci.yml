@@ -61,6 +61,17 @@ jobs:
       contents: read
       id-token: write
 
+      - name: Show OIDC subject and audience
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const token = await core.getIDToken('sts.amazonaws.com');
+            const claims = JSON.parse(
+              Buffer.from(token.split('.')[1], 'base64url').toString()
+            );
+            core.info(`Subject: ${claims.sub}`);
+            core.info(`Audience: ${claims.aud}`);
+
     steps:
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
