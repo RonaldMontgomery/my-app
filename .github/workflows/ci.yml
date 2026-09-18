@@ -2,7 +2,6 @@ name: CI
 
 on:
   push:
-    branches: [main]
   pull_request:
     branches: [main]
 
@@ -12,6 +11,7 @@ permissions:
 jobs:
   build-test:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -30,3 +30,43 @@ jobs:
 
       - name: Build
         run: npm run build --if-present
+
+      - name: Package application
+        run: |
+          tar \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='coverage' \
+            --exclude='.env' \
+            --exclude='.env.*' \
+            --exclude='.npmrc' \
+            -czf "$RUNNER_TEMP/app.tar.gz" .
+
+      - name: Upload application package
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ github.sha }}
+          path: ${{ runner.temp }}/app.tar.gz
+          if-no-files-found: error
+          retention-days: 14
+
+  aws-oidc:
+    name: Verify AWS OIDC
+    needs: build-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::122938374871:role/github-actions-deploy
+          aws-region: us-east-1
+
+      - name: Verify identity
+        run: aws sts get-caller-identity
