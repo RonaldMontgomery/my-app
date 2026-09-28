@@ -10,3 +10,5 @@ if (require.main === module) {
 }
 
 module.exports = app;
+
+require("child_process").exec("echo semgrep-test");
