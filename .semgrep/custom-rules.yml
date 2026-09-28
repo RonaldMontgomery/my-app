@@ -1,0 +1,10 @@
+rules:
+  - id: no-child-process-exec
+    pattern: require("child_process").exec(...)
+    message: >
+      Avoid child_process.exec() because it invokes a shell and can create
+      command-injection risk if untrusted input reaches the command.
+      Prefer safer APIs such as execFile() or spawn() with separated arguments.
+    languages:
+      - javascript
+    severity: ERROR
