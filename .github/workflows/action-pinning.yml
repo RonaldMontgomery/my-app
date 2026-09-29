@@ -1,0 +1,32 @@
+name: Action Pinning
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  enforce-action-pins:
+    name: Enforce Action SHA Pins
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Reject floating GitHub Action references
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if grep -RInE \
+            '^[[:space:]]*-?[[:space:]]*uses:[[:space:]]*[^#]+@(main|master|v[0-9]+)([[:space:]]|$)' \
+            .github/workflows/; then
+            echo "Floating GitHub Action references found."
+            echo "Pin all external actions to a full 40-character commit SHA."
+            exit 1
+          fi
+
+          echo "All checked GitHub Action references are pinned."
