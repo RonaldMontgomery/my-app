@@ -1,0 +1,48 @@
+name: SCA
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  sca:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Install Trivy
+        shell: bash
+        env:
+          TRIVY_VERSION: v0.74.0
+          TRIVY_INSTALL_COMMIT: e1fd17a0ea4a8cf24bc4b4dd7e2cfbf4bb31b994
+        run: |
+          set -euo pipefail
+
+          curl --fail --silent --show-error --location \
+            "https://raw.githubusercontent.com/aquasecurity/trivy/${TRIVY_INSTALL_COMMIT}/contrib/install.sh" \
+            --output "${RUNNER_TEMP}/install-trivy.sh"
+
+          mkdir -p "${RUNNER_TEMP}/trivy-bin"
+
+          sh "${RUNNER_TEMP}/install-trivy.sh" \
+            -b "${RUNNER_TEMP}/trivy-bin" "${TRIVY_VERSION}"
+
+          echo "${RUNNER_TEMP}/trivy-bin" >> "$GITHUB_PATH"
+          "${RUNNER_TEMP}/trivy-bin/trivy" --version
+
+      - name: Generate SBOM
+        run: trivy fs --format cyclonedx --output sbom.json .
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sbom
+          path: sbom.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Scan for critical vulnerabilities
+        run: trivy fs --scanners vuln --severity CRITICAL --exit-code 1 .
