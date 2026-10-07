@@ -16,6 +16,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY index.js ./
 
+USER 65532
+
 EXPOSE 3000
 
 CMD ["index.js"]
