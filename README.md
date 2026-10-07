@@ -695,3 +695,7 @@ The pipeline currently provides:
 - separate Cosign signature verification against the exact repository workflow identity.
 
 The current design separates validation from privileged publication. Pull requests can exercise build, lint, static-analysis, policy, and container-vulnerability controls without receiving registry-write or signing permissions. Only validated pushes to `main` enter the image publication and provenance-signing path.
+
+## AI Use Disclosure
+
+AI assistance was used for troubleshooting, command verification, and drafting documentation. I executed, tested, reviewed, and validated the documentation, implementation, and resulting pipeline myself.
