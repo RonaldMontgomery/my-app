@@ -47,3 +47,109 @@ jobs:
             --severity CRITICAL \
             --exit-code 1 \
             my-app:${{ github.sha }}
+
+  publish-sign:
+    name: Publish, Sign, Verify
+    needs: container-security
+
+    # Do not publish or request OIDC tokens from feature branches or PRs.
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Define image name
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          IMAGE_REPO="ghcr.io/${GITHUB_REPOSITORY,,}"
+          IMAGE="${IMAGE_REPO}:${GITHUB_SHA}"
+
+          echo "IMAGE_REPO=${IMAGE_REPO}" >> "$GITHUB_ENV"
+          echo "IMAGE=${IMAGE}" >> "$GITHUB_ENV"
+
+          echo "Image: ${IMAGE}"
+
+      - name: Build image for publishing
+        run: docker build -t "$IMAGE" .
+
+      - name: Install Trivy
+        shell: bash
+        env:
+          TRIVY_VERSION: v0.74.0
+          TRIVY_INSTALL_COMMIT: e1fd17a0ea4a8cf24bc4b4dd7e2cfbf4bb31b994
+        run: |
+          set -euo pipefail
+
+          curl --fail --silent --show-error --location \
+            "https://raw.githubusercontent.com/aquasecurity/trivy/${TRIVY_INSTALL_COMMIT}/contrib/install.sh" \
+            --output "${RUNNER_TEMP}/install-trivy.sh"
+
+          mkdir -p "${RUNNER_TEMP}/trivy-bin"
+
+          sh "${RUNNER_TEMP}/install-trivy.sh" \
+            -b "${RUNNER_TEMP}/trivy-bin" "${TRIVY_VERSION}"
+
+          echo "${RUNNER_TEMP}/trivy-bin" >> "$GITHUB_PATH"
+
+      - name: Gate published image on Critical vulnerabilities
+        run: |
+          trivy image \
+            --scanners vuln \
+            --severity CRITICAL \
+            --exit-code 1 \
+            "$IMAGE"
+
+      - name: Log in to GitHub Container Registry
+        shell: bash
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" |
+            docker login ghcr.io \
+              -u "${{ github.actor }}" \
+              --password-stdin
+
+      - name: Push image
+        run: docker push "$IMAGE"
+
+      - name: Resolve immutable image digest
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DIGEST="$(
+            docker buildx imagetools inspect "$IMAGE" |
+            awk '/^Digest:/ {print $2; exit}'
+          )"
+
+          if [ -z "$DIGEST" ]; then
+            echo "Unable to resolve image digest"
+            exit 1
+          fi
+
+          IMAGE_REF="${IMAGE_REPO}@${DIGEST}"
+
+          echo "IMAGE_DIGEST=${DIGEST}" >> "$GITHUB_ENV"
+          echo "IMAGE_REF=${IMAGE_REF}" >> "$GITHUB_ENV"
+
+          echo "Immutable image reference: ${IMAGE_REF}"
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Sign image with GitHub OIDC
+        run: cosign sign --yes "$IMAGE_REF"
+
+      - name: Verify image signature
+        run: |
+          cosign verify "$IMAGE_REF" \
+            --certificate-identity "https://github.com/${GITHUB_REPOSITORY}/.github/workflows/container-security.yml@refs/heads/main" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
