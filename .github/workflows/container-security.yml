@@ -1,0 +1,49 @@
+name: Container Security
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  container-security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Build hardened container image
+        run: docker build -t my-app:${{ github.sha }} .
+
+      - name: Hadolint Dockerfile
+        run: docker run --rm -i hadolint/hadolint < Dockerfile
+
+      - name: Install Trivy
+        shell: bash
+        env:
+          TRIVY_VERSION: v0.74.0
+          TRIVY_INSTALL_COMMIT: e1fd17a0ea4a8cf24bc4b4dd7e2cfbf4bb31b994
+        run: |
+          set -euo pipefail
+
+          curl --fail --silent --show-error --location \
+            "https://raw.githubusercontent.com/aquasecurity/trivy/${TRIVY_INSTALL_COMMIT}/contrib/install.sh" \
+            --output "${RUNNER_TEMP}/install-trivy.sh"
+
+          mkdir -p "${RUNNER_TEMP}/trivy-bin"
+
+          sh "${RUNNER_TEMP}/install-trivy.sh" \
+            -b "${RUNNER_TEMP}/trivy-bin" "${TRIVY_VERSION}"
+
+          echo "${RUNNER_TEMP}/trivy-bin" >> "$GITHUB_PATH"
+
+      - name: Scan image for Critical vulnerabilities
+        run: |
+          trivy image \
+            --scanners vuln \
+            --severity CRITICAL \
+            --exit-code 1 \
+            my-app:${{ github.sha }}
