@@ -1,0 +1,2 @@
+NAME                      READY   STATUS    RESTARTS   AGE   IP           NODE                 NOMINATED NODE   READINESS GATES
+my-app-76fcd8576b-fkpsj   1/1     Running   0          37s   10.244.0.6   lab8-control-plane   <none>           <none>

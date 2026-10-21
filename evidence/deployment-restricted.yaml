@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "3"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"name":"my-app","namespace":"lab8"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"my-app"}},"template":{"metadata":{"labels":{"app":"my-app"}},"spec":{"automountServiceAccountToken":false,"containers":[{"image":"my-app:after","imagePullPolicy":"IfNotPresent","name":"my-app","ports":[{"containerPort":3000,"name":"http"}],"securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]}}}],"securityContext":{"runAsNonRoot":true,"runAsUser":65532,"seccompProfile":{"type":"RuntimeDefault"}}}}}}
+  creationTimestamp: "2026-10-21T20:13:54Z"
+  generation: 3
+  name: my-app
+  namespace: lab8
+  resourceVersion: "1324"
+  uid: 596e16bf-515a-4c59-a73c-323f8ae66b96
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: my-app
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2026-10-21T14:16:32-06:00"
+      labels:
+        app: my-app
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - image: my-app:after
+        imagePullPolicy: IfNotPresent
+        name: my-app
+        ports:
+        - containerPort: 3000
+          name: http
+          protocol: TCP
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 30
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2026-10-21T20:13:56Z"
+    lastUpdateTime: "2026-10-21T20:13:56Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2026-10-21T20:13:54Z"
+    lastUpdateTime: "2026-10-21T20:18:58Z"
+    message: ReplicaSet "my-app-76fcd8576b" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 3
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1

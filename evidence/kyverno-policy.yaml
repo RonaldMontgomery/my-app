@@ -1,0 +1,107 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kyverno.io/v1","kind":"ClusterPolicy","metadata":{"annotations":{},"name":"require-resource-limits"},"spec":{"background":true,"rules":[{"match":{"any":[{"resources":{"kinds":["Pod"],"namespaces":["lab8"]}}]},"name":"check-resource-limits","validate":{"failureAction":"Enforce","message":"CPU and memory limits are required.","pattern":{"spec":{"containers":[{"resources":{"limits":{"cpu":"?*","memory":"?*"}}}]}}}}]}}
+  creationTimestamp: "2026-10-21T20:22:56Z"
+  generation: 1
+  name: require-resource-limits
+  resourceVersion: "2165"
+  uid: f3c5787c-9e1f-4461-9e27-5fb543983617
+spec:
+  admission: true
+  background: true
+  emitWarning: false
+  rules:
+  - match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+          namespaces:
+          - lab8
+    name: check-resource-limits
+    skipBackgroundRequests: true
+    validate:
+      allowExistingViolations: true
+      failureAction: Enforce
+      message: CPU and memory limits are required.
+      pattern:
+        spec:
+          containers:
+          - resources:
+              limits:
+                cpu: ?*
+                memory: ?*
+  validationFailureAction: Audit
+status:
+  autogen:
+    rules:
+    - match:
+        any:
+        - resources:
+            kinds:
+            - apps/v1/DaemonSet
+            - apps/v1/Deployment
+            - batch/v1/Job
+            - apps/v1/ReplicaSet
+            - v1/ReplicationController
+            - apps/v1/StatefulSet
+            namespaces:
+            - lab8
+        resources: {}
+      name: autogen-check-resource-limits
+      skipBackgroundRequests: true
+      validate:
+        allowExistingViolations: true
+        failureAction: Enforce
+        message: CPU and memory limits are required.
+        pattern:
+          spec:
+            template:
+              spec:
+                containers:
+                - resources:
+                    limits:
+                      cpu: ?*
+                      memory: ?*
+    - match:
+        any:
+        - resources:
+            kinds:
+            - batch/v1/CronJob
+            namespaces:
+            - lab8
+        resources: {}
+      name: autogen-cronjob-check-resource-limits
+      skipBackgroundRequests: true
+      validate:
+        allowExistingViolations: true
+        failureAction: Enforce
+        message: CPU and memory limits are required.
+        pattern:
+          spec:
+            jobTemplate:
+              spec:
+                template:
+                  spec:
+                    containers:
+                    - resources:
+                        limits:
+                          cpu: ?*
+                          memory: ?*
+  conditions:
+  - lastTransitionTime: "2026-10-21T20:22:56Z"
+    message: Ready
+    reason: Succeeded
+    status: "True"
+    type: Ready
+  rulecount:
+    generate: 0
+    mutate: 0
+    validate: 1
+    verifyimages: 0
+  validatingadmissionpolicy:
+    generated: false
+    message: skip generating ValidatingAdmissionPolicy for non CEL rules.

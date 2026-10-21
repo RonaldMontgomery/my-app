@@ -1,0 +1,8 @@
+﻿
+# Historical Lab 8 snapshots, not deployment sources.
+# Preserve their original contents as evidence of observed configuration.
+# Active application manifests remain scanned.
+/evidence/deployment-baseline.yaml
+/evidence/kyverno-policy.yaml
+/evidence/scheduler-manifest-after.yaml
+/evidence/scheduler-pod-after.yaml
