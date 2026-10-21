@@ -104,3 +104,22 @@ After saving the submission evidence, I deleted the lab8 cluster with kind delet
 ## AI Assistance Disclosure
 
 OpenAI ChatGPT assisted with command preparation, troubleshooting, interpretation of security findings, and drafting this writeup. The results reported here are based on commands I executed and the captured output from my local environment.
+
+## CI Scan Review
+
+Semgrep reported 12 findings after the lab artifacts were added. Four specific
+historical evidence snapshots were excluded from source scanning so their
+recorded contents could remain unchanged. Other evidence remains in scope.
+
+A rule-specific suppression documents that the Kyverno validation pattern is
+not a runnable Pod specification.
+
+Three rule-specific exceptions retain the pinned upstream kube-bench Job used
+for both scans. Root and host-process access support node inspection. The
+missing explicit privilege-escalation restriction is accepted as a limitation
+of this temporary lab audit configuration, not asserted to be necessary.
+The audit ran in lab8-audit, and the cluster was deleted after evidence capture.
+
+These changes affect scan scope and comments only. They do not remediate
+additional cluster findings or change the recorded benchmark results.
+Application manifests remain subject to the existing security checks.

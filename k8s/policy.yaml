@@ -1,4 +1,4 @@
-﻿apiVersion: kyverno.io/v1
+apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: require-resource-limits
@@ -17,6 +17,8 @@ spec:
         failureAction: Enforce
         message: "CPU and memory limits are required."
         pattern:
+          # Validation pattern only; this does not create a Pod.
+          # nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
           spec:
             containers:
               - resources:

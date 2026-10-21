@@ -8,10 +8,15 @@ spec:
     metadata:
       labels:
         app: kube-bench
+    # Temporary node audit: root access is retained to inspect protected host files.
+    # nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
     spec:
       containers:
         - command: ["kube-bench"]
           image: docker.io/aquasec/kube-bench:v0.16.0
+          # Accepted lab-only risk: retain the pinned upstream scanner configuration.
+          # This exception does not establish that privilege escalation is necessary.
+          # nosemgrep: yaml.kubernetes.security.allow-privilege-escalation-no-securitycontext.allow-privilege-escalation-no-securitycontext
           name: kube-bench
           volumeMounts:
             - name: var-lib-cni
@@ -50,6 +55,8 @@ spec:
             - mountPath: /opt/cni/bin/
               name: opt-cni-bin
               readOnly: true
+      # Required for the benchmark to inspect node processes; lab8-audit only.
+      # nosemgrep: yaml.kubernetes.security.hostpid-pod.hostpid-pod
       hostPID: true
       restartPolicy: Never
       volumes:
