@@ -1,0 +1,27 @@
+kubectl : Error from server: error when applying patch:
+At line:1 char:1
++ kubectl apply -f k8s/deployment-invalid.yaml > evidence/kyverno-denia ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error from serv...applying patch::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+{"metadata":{"annotations":{"kubectl.kubernetes.io/last-applied-configuration":"{\"apiVersion\":\"apps/v1\",\
+"kind\":\"Deployment\",\"metadata\":{\"annotations\":{},\"name\":\"my-app\",\"namespace\":\"lab8\"},\"spec\":
+{\"replicas\":1,\"selector\":{\"matchLabels\":{\"app\":\"my-app\"}},\"template\":{\"metadata\":{\"labels\":{\
+"app\":\"my-app\"}},\"spec\":{\"automountServiceAccountToken\":false,\"containers\":[{\"image\":\"my-app:afte
+r\",\"imagePullPolicy\":\"IfNotPresent\",\"name\":\"my-app\",\"ports\":[{\"containerPort\":3000,\"name\":\"ht
+tp\"}],\"securityContext\":{\"allowPrivilegeEscalation\":false,\"capabilities\":{\"drop\":[\"ALL\"]}}}],\"sec
+urityContext\":{\"runAsNonRoot\":true,\"runAsUser\":65532,\"seccompProfile\":{\"type\":\"RuntimeDefault\"}}}}
+}}\n"}},"spec":{"template":{"spec":{"$setElementOrder/containers":[{"name":"my-app"}],"containers":[{"name":"
+my-app","resources":null}]}}}}
+to:
+Resource: "apps/v1, Resource=deployments", GroupVersionKind: "apps/v1, Kind=Deployment"
+Name: "my-app", Namespace: "lab8"
+for: "k8s/deployment-invalid.yaml": error when patching "k8s/deployment-invalid.yaml": admission webhook
+"validate.kyverno.svc-fail" denied the request:
+
+resource Deployment/lab8/my-app was blocked due to the following policies
+
+require-resource-limits:
+  autogen-check-resource-limits: 'validation error: CPU and memory limits are required. rule
+autogen-check-resource-limits failed at path /spec/template/spec/containers/0/resources/limits/'

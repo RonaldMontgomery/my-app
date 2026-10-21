@@ -1,0 +1,4 @@
+600 root:root /etc/systemd/system/kubelet.service
+600 root:root /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+600 root:root /etc/systemd/system/kubelet.service.d/11-kind.conf
+600 root:root /var/lib/kubelet/config.yaml
