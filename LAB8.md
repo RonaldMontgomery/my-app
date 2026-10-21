@@ -1,4 +1,4 @@
-﻿# Lab 8: Kubernetes and Cloud Native Security
+# Lab 8: Kubernetes and Cloud Native Security
 
 ## Objective
 
@@ -99,7 +99,7 @@ The node-file changes apply to this local kind cluster and will be lost when it 
 
 ## Cleanup Status
 
-The cluster is retained temporarily while submission evidence is reviewed. Cleanup has not yet been recorded as complete.
+After saving the submission evidence, I deleted the lab8 cluster with kind delete cluster --name lab8 and confirmed that it no longer appeared in kind get clusters.
 
 ## AI Assistance Disclosure
 
