@@ -137,7 +137,7 @@ jobs:
 
           DIGEST="$(
             docker buildx imagetools inspect "$IMAGE" |
-            awk '/^Digest:/ {print $2; exit}'
+            awk '/^Digest:/ {print $2}'
           )"
 
           if [ -z "$DIGEST" ]; then
